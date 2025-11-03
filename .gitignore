@@ -1,0 +1,9 @@
+client_secret.json
+token.json
+venv/
+__pycache__/
+dist/
+build/
+*.egg-info/
+# 🌸 Sensitive credentials
+
