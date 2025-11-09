@@ -42,9 +42,12 @@ OR
    python -m venv venv
    venv\Scripts\activate
 
-3. pip install .
+3. pip install -r requirements.txt
 
-4. video-upload . 
+
+4. pip install . 
+
+5. video-upload
 
 
 
