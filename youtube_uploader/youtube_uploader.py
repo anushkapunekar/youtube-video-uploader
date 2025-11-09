@@ -16,19 +16,56 @@ sys.stdout.reconfigure(encoding='utf-8')
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
 # ---------- OAuth Handling ----------
+# ---------- OAuth Handling (with public fallback) ----------
+import json
+from google_auth_oauthlib.flow import InstalledAppFlow
+
+# Paste your public OAuth config here (replace with yours from step 1)
+PUBLIC_CLIENT_CONFIG = {
+    "installed": {
+        "client_id": "774265815561-g94m0bt6v1rgjspgs1kdqvrsp4ovo93n.apps.googleusercontent.com",
+        "project_id": "fresh-delight-476913-b3",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "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",
+        "redirect_uris": ["http://localhost"]
+    }
+}
+
 def get_authenticated_service():
     creds = None
+
+    # 🌿 Step 1: Try loading an existing token.json
     if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+        except Exception as e:
+            print(f"⚠️ Error reading token.json: {e}")
+            creds = None
+
+    # 🌿 Step 2: If no valid creds, either refresh or create new
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
+            print("🔄 Refreshing existing credentials...")
             creds.refresh(google.auth.transport.requests.Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", SCOPES)
+            # 🌸 Step 3: Detect and choose credential source
+            if os.path.exists("client_secret.json"):
+                print("🔑 Using developer client_secret.json")
+                flow = InstalledAppFlow.from_client_secrets_file("client_secret.json", SCOPES)
+            else:
+                print("🌸 No client_secret.json found — using public fallback config")
+                flow = InstalledAppFlow.from_client_config(PUBLIC_CLIENT_CONFIG, SCOPES)
+
             creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
+            with open("token.json", "w") as token:
+                token.write(creds.to_json())
+                print("💾 Saved new token.json")
+
+    print("✅ Authentication complete")
     return build("youtube", "v3", credentials=creds)
+
 
 # ---------- Detect if Video is a Short ----------
 def is_vertical_video(video_path):

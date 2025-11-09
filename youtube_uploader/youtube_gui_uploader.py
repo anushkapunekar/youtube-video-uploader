@@ -3,13 +3,16 @@ from tkinter import filedialog, messagebox
 import subprocess
 import os
 import sys
+import threading
 
-# ensure emoji printing works on Windows
+# Ensure emoji printing works on Windows
 sys.stdout.reconfigure(encoding='utf-8')
 
 
 # 🌸 Upload video function
 def upload_video():
+    messagebox.showinfo("Uploading", "🚀 Upload started!\nPlease don’t close this window.\nThis may take a few minutes...")
+
     file_path = entry_file.get()
     title = entry_title.get()
     description = entry_description.get("1.0", tk.END).strip()
@@ -24,9 +27,10 @@ def upload_video():
         messagebox.showerror("Error", "Please enter a video title.")
         return
 
+    # 🌸 Get current script directory to ensure correct paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # run the uploader script directly by file path (works without package install)
     uploader_script_path = os.path.join(script_dir, "youtube_uploader.py")
+
     cmd = [
         sys.executable, uploader_script_path,
         "--file", file_path,
@@ -36,11 +40,11 @@ def upload_video():
         "--privacy", privacy
     ]
 
-
     if thumbnail_path:
         cmd.extend(["--thumbnail", thumbnail_path])
 
     try:
+        # 🌿 Run uploader in the same directory where credentials exist
         result = subprocess.run(
             cmd, capture_output=True, text=True, cwd=script_dir
         )
@@ -62,6 +66,7 @@ def upload_video():
         messagebox.showerror("Error", f"Unexpected error:\n{e}")
 
 
+# 🌿 File selection functions
 def browse_video():
     path = filedialog.askopenfilename(
         title="Select Video File",
@@ -82,18 +87,25 @@ def browse_thumbnail():
         entry_thumbnail.insert(0, path)
 
 
+# 🌸 Function to start upload in background thread
+def start_upload_thread():
+    t = threading.Thread(target=upload_video)
+    t.daemon = True
+    t.start()
+
+
 # 🌿 Main window setup
 def main():
     global entry_file, entry_title, entry_description, entry_category, privacy_var, entry_thumbnail
 
     root = tk.Tk()
-    root.title("YouTube Video Uploader 🌸")
+    root.title("Magical YouTube Uploader 🌸")
     root.geometry("550x550")
     root.resizable(False, False)
     root.configure(bg="#faf4ff")
 
     # 🌸 Title Label
-    tk.Label(root, text="✨ YouTube Uploader", font=("Segoe UI", 18, "bold"), bg="#faf4ff", fg="#5b3e96").pack(pady=15)
+    tk.Label(root, text="✨ Magical YouTube Uploader", font=("Segoe UI", 18, "bold"), bg="#faf4ff", fg="#5b3e96").pack(pady=15)
 
     # Video File
     tk.Label(root, text="🎬 Video File:", bg="#faf4ff", fg="#3c2a68").pack(anchor="w", padx=30)
@@ -133,8 +145,14 @@ def main():
     tk.Button(frame_thumb, text="Browse", command=browse_thumbnail, bg="#d8c6ff").pack(side=tk.LEFT)
 
     # Upload button
-    tk.Button(root, text="🚀 Upload Video", command=upload_video, bg="#cbb2ff", fg="#2c184a",
-              font=("Segoe UI", 11, "bold")).pack(pady=20)
+    tk.Button(
+        root,
+        text="🚀 Upload Video",
+        command=start_upload_thread,
+        bg="#cbb2ff",
+        fg="#2c184a",
+        font=("Segoe UI", 11, "bold")
+    ).pack(pady=20)
 
     # Footer
     tk.Label(root, text="Made with 💜 by Noor", bg="#faf4ff", fg="#7a5dc7", font=("Segoe UI", 9)).pack(pady=10)
