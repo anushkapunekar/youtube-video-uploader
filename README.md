@@ -1,6 +1,6 @@
-# 🌸 YouTube Uploader GUI by Noor
+# 🌸 YouTube Uploader GUI 
 
-A cute magical pastel-themed YouTube video uploader built with Tkinter and Python.
+A  YouTube video uploader built with Tkinter and Python.
 
 ---
 

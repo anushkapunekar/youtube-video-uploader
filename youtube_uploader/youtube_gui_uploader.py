@@ -25,15 +25,17 @@ def upload_video():
         return
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
+    # run the uploader script directly by file path (works without package install)
+    uploader_script_path = os.path.join(script_dir, "youtube_uploader.py")
     cmd = [
-        sys.executable, "-m", "youtube_uploader.youtube_uploader",
+        sys.executable, uploader_script_path,
         "--file", file_path,
         "--title", title,
         "--description", description,
         "--category", category,
         "--privacy", privacy
     ]
+
 
     if thumbnail_path:
         cmd.extend(["--thumbnail", thumbnail_path])
